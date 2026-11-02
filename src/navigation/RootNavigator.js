@@ -14,6 +14,7 @@ export default function RootNavigator(){
             <Stack.Screen
                 name = "Home"
                 component = {HomeScreen}
+                
             />
 
             <Stack.Screen

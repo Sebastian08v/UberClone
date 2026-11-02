@@ -1,12 +1,13 @@
 import React from 'react';
-import DrawerNavigator from './src/navigation/DrawerNavigator';
 import {NavigationContainer} from '@react-navigation/native';
-
+import RegistrationTabs from './src/navigation/RegistrationTabs';
+import DrawerNavigator from './src/navigation/DrawerNavigator';
 
 export default function App() {
-  return (
+  const MOSTRAR_REGISTRO = true;
+  return ( 
     <NavigationContainer>
-        <DrawerNavigator/>
+      {MOSTRAR_REGISTRO ? <RegistrationTabs /> : <DrawerNavigator />}
     </NavigationContainer>
   );
 }
