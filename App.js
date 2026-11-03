@@ -1,14 +1,26 @@
-import React from 'react';
-import {NavigationContainer} from '@react-navigation/native';
-import RegistrationTabs from './src/navigation/RegistrationTabs';
+import React, { useContext } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
 import DrawerNavigator from './src/navigation/DrawerNavigator';
+import RegistrationTabs from './src/navigation/RegistrationTabs';
+import { SessionProvider, SessionContext } from './src/context/SessionContext';
+import { TripProvider } from './src/context/TripContext';
 
-export default function App() {
-  const MOSTRAR_REGISTRO = true;
-  return ( 
+function AppContent() {
+  const { approvalStatus } = useContext(SessionContext);
+
+  return (
     <NavigationContainer>
-      {MOSTRAR_REGISTRO ? <RegistrationTabs /> : <DrawerNavigator />}
+      {approvalStatus === null ? <RegistrationTabs /> : <DrawerNavigator />}
     </NavigationContainer>
   );
 }
 
+export default function App() {
+  return (
+    <SessionProvider>
+      <TripProvider>
+        <AppContent />
+      </TripProvider>
+    </SessionProvider>
+  );
+}
