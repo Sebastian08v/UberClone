@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {useContext} from 'react';
+import { SessionContext } from '../context/SessionContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import PersonalDataScreen from '../screens/PersonalDataScreen';
@@ -14,6 +15,7 @@ const ICONOS = {
 };
 
 export default function RegistrationTabs() {
+  const { t } = useContext(SessionContext);
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -32,17 +34,17 @@ export default function RegistrationTabs() {
       <Tab.Screen
         name="PersonalData"
         component={PersonalDataScreen}
-        options={{ title: 'Datos personales' }}
+        options={{ title: t.tabs.personalData }}
       />
       <Tab.Screen
         name="Vehicle"
         component={VehicleScreen}
-        options={{ title: 'Vehículo' }}
+        options={{ title: t.tabs.vehicle }}
       />
       <Tab.Screen
         name="Documents"
         component={DocumentsScreen}
-        options={{ title: 'Documentos' }}
+        options={{ title: t.tabs.documents }}
       />
     </Tab.Navigator>
   );

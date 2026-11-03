@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, Button } from 'react-native';
+import { SessionContext } from '../context/SessionContext';
 
 export default function IncomingRequestScreen({ navigation }) {
+  const { t } = useContext(SessionContext);
+
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Solicitud entrante</Text>
+      <Text>{t.incomingRequest.title}</Text>
       <Button
-        title="Ir a viaje en curso"
+        title={t.incomingRequest.goToTrip}
         onPress={() => navigation.navigate('TripInProgress')}
       />
     </View>
