@@ -23,4 +23,4 @@ export default function App() {
       </TripProvider>
     </SessionProvider>
   );
-}
+}   
