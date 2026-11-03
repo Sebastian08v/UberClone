@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { View, Text, Button } from 'react-native';
 import { SessionContext } from '../context/SessionContext';
+import FormField from '../components/FormField';
 
 export default function PersonalDataScreen() {
   const { setApprovalStatus, language, changeLanguage, t } =
@@ -17,7 +18,7 @@ export default function PersonalDataScreen() {
       <Button
         title={t.personalData.simulateRegister}
         onPress={() => setApprovalStatus('pending')}
-      />
+      />  
     </View>
   );
 }
