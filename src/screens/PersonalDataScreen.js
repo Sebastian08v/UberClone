@@ -1,55 +1,64 @@
 import React, { useContext, useState } from 'react';
 import { ScrollView, Text, Button } from 'react-native';
 import { SessionContext } from '../context/SessionContext';
+import { RegistrationContext } from '../context/RegistrationContext';
+import { registerDriver } from '../services/driverService';
 import FormField from '../components/FormField';
 import DropdownField from '../components/DropdownField';
 import DatePickerField from '../components/DatePickerField';
 import ImagePickerField from '../components/ImagePickerField';
-import {required,validateFullName,validateIdNumber,validatePhone,validateBirthDate,validateEmail} from '../utils/validators';
-
-const initialForm = {
-  photo: '',
-  fullName: '',
-  idNumber: '',
-  phone: '',
-  birthDate: null,
-  gender: '',
-  email: '',
-};
-
-const validators = {
-  photo: required,
-  fullName: validateFullName,
-  idNumber: validateIdNumber,
-  phone: validatePhone,
-  birthDate: validateBirthDate,
-  gender: required,
-  email: validateEmail,
-};
 
 export default function PersonalDataScreen() {
-  const { setApprovalStatus, language, changeLanguage, t } =
+  const { setApprovalStatus, setDriver, language, changeLanguage, t } =
     useContext(SessionContext);
-  const [form, setForm] = useState(initialForm);
-  const [touched, setTouched] = useState({});
+  const {
+    forms,
+    setField,
+    touch,
+    setAndTouch,
+    getError,
+    isRegistrationValid,
+    touchAll,
+  } = useContext(RegistrationContext);
 
-  const setField = (field, value) =>
-    setForm((prev) => ({ ...prev, [field]: value }));
+  const [submitting, setSubmitting] = useState(false);
+  const [emailTaken, setEmailTaken] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
-  const touch = (field) =>
-    setTouched((prev) => ({ ...prev, [field]: true }));
+  const form = forms.personal;
+  const set = (field, value) => setField('personal', field, value);
+  const blur = (field) => touch('personal', field);
+  const setSel = (field, value) => setAndTouch('personal', field, value);
 
-  // Para selectores (foto, fecha, lista): se marca como tocado al cambiar
-  const setAndTouch = (field, value) => {
-    setField(field, value);
-    touch(field);
+  const errorText = (field) => {
+    const key = getError('personal', field);
+    return key ? t.errors[key] : '';
   };
 
-  // Devuelve el texto del error solo si el campo ya fue tocado
-  const errorText = (field) => {
-    if (!touched[field]) return '';
-    const key = validators[field](form[field]);
-    return key ? t.errors[key] : '';
+  const handleRegister = async () => {
+    setSubmitError('');
+    if (!isRegistrationValid()) {
+      touchAll();
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const id = await registerDriver({
+        personal: forms.personal,
+        vehicle: forms.vehicle,
+        language,
+      });
+      setDriver({ id });
+      setApprovalStatus('pending');
+    } catch (error) {
+      if (error.message === 'emailTaken') {
+        setEmailTaken(true);
+      } else {
+        setSubmitError(t.errors.registerFailed);
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const genderOptions = [
@@ -72,7 +81,7 @@ export default function PersonalDataScreen() {
       <ImagePickerField
         label={t.personalData.photo}
         value={form.photo}
-        onChange={(uri) => setAndTouch('photo', uri)}
+        onChange={(uri) => setSel('photo', uri)}
         cameraText={t.personalData.camera}
         galleryText={t.personalData.gallery}
         permissionText={t.personalData.permission}
@@ -82,8 +91,8 @@ export default function PersonalDataScreen() {
       <FormField
         label={t.personalData.fullName}
         value={form.fullName}
-        onChangeText={(text) => setField('fullName', text)}
-        onBlur={() => touch('fullName')}
+        onChangeText={(text) => set('fullName', text)}
+        onBlur={() => blur('fullName')}
         maxLength={50}
         error={errorText('fullName')}
       />
@@ -91,8 +100,8 @@ export default function PersonalDataScreen() {
       <FormField
         label={t.personalData.idNumber}
         value={form.idNumber}
-        onChangeText={(text) => setField('idNumber', text)}
-        onBlur={() => touch('idNumber')}
+        onChangeText={(text) => set('idNumber', text)}
+        onBlur={() => blur('idNumber')}
         keyboardType="numeric"
         maxLength={10}
         error={errorText('idNumber')}
@@ -101,8 +110,8 @@ export default function PersonalDataScreen() {
       <FormField
         label={t.personalData.phone}
         value={form.phone}
-        onChangeText={(text) => setField('phone', text)}
-        onBlur={() => touch('phone')}
+        onChangeText={(text) => set('phone', text)}
+        onBlur={() => blur('phone')}
         keyboardType="phone-pad"
         maxLength={10}
         error={errorText('phone')}
@@ -111,7 +120,7 @@ export default function PersonalDataScreen() {
       <DatePickerField
         label={t.personalData.birthDate}
         value={form.birthDate}
-        onChange={(date) => setAndTouch('birthDate', date)}
+        onChange={(date) => setSel('birthDate', date)}
         placeholder={t.personalData.selectDate}
         error={errorText('birthDate')}
       />
@@ -119,7 +128,7 @@ export default function PersonalDataScreen() {
       <DropdownField
         label={t.personalData.gender}
         value={form.gender}
-        onValueChange={(value) => setAndTouch('gender', value)}
+        onValueChange={(value) => setSel('gender', value)}
         options={genderOptions}
         placeholder={t.personalData.select}
         error={errorText('gender')}
@@ -128,11 +137,14 @@ export default function PersonalDataScreen() {
       <FormField
         label={t.personalData.email}
         value={form.email}
-        onChangeText={(text) => setField('email', text)}
-        onBlur={() => touch('email')}
+        onChangeText={(text) => {
+          set('email', text);
+          setEmailTaken(false);
+        }}
+        onBlur={() => blur('email')}
         keyboardType="email-address"
         autoCapitalize="none"
-        error={errorText('email')}
+        error={emailTaken ? t.errors.emailTaken : errorText('email')}
       />
 
       <DropdownField
@@ -143,9 +155,14 @@ export default function PersonalDataScreen() {
         placeholder={t.personalData.select}
       />
 
+      {submitError ? (
+        <Text style={{ color: '#d32f2f', marginBottom: 8 }}>{submitError}</Text>
+      ) : null}
+
       <Button
         title={t.personalData.simulateRegister}
-        onPress={() => setApprovalStatus('pending')}
+        onPress={handleRegister}
+        disabled={submitting}
       />
     </ScrollView>
   );

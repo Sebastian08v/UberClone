@@ -51,6 +51,8 @@ export default {
     capacityInvalid: 'Debe ser un número',
     capacityXl: 'XL exige un mínimo de 6 pasajeros',
     expired: 'La fecha de vencimiento debe ser posterior a hoy',
+    emailTaken: 'Este correo ya está registrado',
+    registerFailed: 'No se pudo completar el registro. Intenta de nuevo.',
   },
     personalData: {
     title: 'Datos personales',

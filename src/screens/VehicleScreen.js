@@ -1,61 +1,23 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { ScrollView, Text } from 'react-native';
 import { SessionContext } from '../context/SessionContext';
+import { RegistrationContext } from '../context/RegistrationContext';
 import FormField from '../components/FormField';
 import DropdownField from '../components/DropdownField';
 import ImagePickerField from '../components/ImagePickerField';
-import {
-  required,
-  validatePlate,
-  validateMaxLength,
-  validateYear,
-  validateCapacity,
-} from '../utils/validators';
-
-const initialForm = {
-  category: '',
-  plate: '',
-  brand: '',
-  model: '',
-  year: '',
-  color: '',
-  capacity: '',
-  photo: '',
-};
-
-// Cada validador recibe todo el formulario, así la capacidad puede leer la categoría
-const validators = {
-  category: (f) => required(f.category),
-  plate: (f) => validatePlate(f.plate),
-  brand: (f) => validateMaxLength(f.brand, 30),
-  model: (f) => validateMaxLength(f.model, 30),
-  year: (f) => validateYear(f.year),
-  color: (f) => required(f.color),
-  capacity: (f) => validateCapacity(f.capacity, f.category),
-  photo: (f) => required(f.photo),
-};
 
 export default function VehicleScreen() {
   const { t } = useContext(SessionContext);
-  const [form, setForm] = useState(initialForm);
-  const [touched, setTouched] = useState({});
+  const { forms, setField, touch, setAndTouch, getError } =
+    useContext(RegistrationContext);
 
-  const setField = (field, value) =>
-    setForm((prev) => ({ ...prev, [field]: value }));
+  const form = forms.vehicle;
+  const set = (field, value) => setField('vehicle', field, value);
+  const blur = (field) => touch('vehicle', field);
+  const setSel = (field, value) => setAndTouch('vehicle', field, value);
 
-  const touch = (field) =>
-    setTouched((prev) => ({ ...prev, [field]: true }));
-
-  // Para selectores (foto, listas): se marca como tocado al cambiar
-  const setAndTouch = (field, value) => {
-    setField(field, value);
-    touch(field);
-  };
-
-  // Devuelve el texto del error solo si el campo ya fue tocado
   const errorText = (field) => {
-    if (!touched[field]) return '';
-    const key = validators[field](form);
+    const key = getError('vehicle', field);
     return key ? t.errors[key] : '';
   };
 
@@ -84,7 +46,7 @@ export default function VehicleScreen() {
       <DropdownField
         label={t.vehicle.category}
         value={form.category}
-        onValueChange={(value) => setAndTouch('category', value)}
+        onValueChange={(value) => setSel('category', value)}
         options={categoryOptions}
         placeholder={t.vehicle.select}
         error={errorText('category')}
@@ -93,8 +55,8 @@ export default function VehicleScreen() {
       <FormField
         label={t.vehicle.plate}
         value={form.plate}
-        onChangeText={(text) => setField('plate', text.toUpperCase())}
-        onBlur={() => touch('plate')}
+        onChangeText={(text) => set('plate', text.toUpperCase())}
+        onBlur={() => blur('plate')}
         autoCapitalize="characters"
         autoCorrect={false}
         maxLength={6}
@@ -104,8 +66,8 @@ export default function VehicleScreen() {
       <FormField
         label={t.vehicle.brand}
         value={form.brand}
-        onChangeText={(text) => setField('brand', text)}
-        onBlur={() => touch('brand')}
+        onChangeText={(text) => set('brand', text)}
+        onBlur={() => blur('brand')}
         maxLength={30}
         error={errorText('brand')}
       />
@@ -113,8 +75,8 @@ export default function VehicleScreen() {
       <FormField
         label={t.vehicle.model}
         value={form.model}
-        onChangeText={(text) => setField('model', text)}
-        onBlur={() => touch('model')}
+        onChangeText={(text) => set('model', text)}
+        onBlur={() => blur('model')}
         maxLength={30}
         error={errorText('model')}
       />
@@ -122,8 +84,8 @@ export default function VehicleScreen() {
       <FormField
         label={t.vehicle.year}
         value={form.year}
-        onChangeText={(text) => setField('year', text)}
-        onBlur={() => touch('year')}
+        onChangeText={(text) => set('year', text)}
+        onBlur={() => blur('year')}
         keyboardType="numeric"
         maxLength={4}
         error={errorText('year')}
@@ -132,7 +94,7 @@ export default function VehicleScreen() {
       <DropdownField
         label={t.vehicle.color}
         value={form.color}
-        onValueChange={(value) => setAndTouch('color', value)}
+        onValueChange={(value) => setSel('color', value)}
         options={colorOptions}
         placeholder={t.vehicle.select}
         error={errorText('color')}
@@ -141,8 +103,8 @@ export default function VehicleScreen() {
       <FormField
         label={t.vehicle.capacity}
         value={form.capacity}
-        onChangeText={(text) => setField('capacity', text)}
-        onBlur={() => touch('capacity')}
+        onChangeText={(text) => set('capacity', text)}
+        onBlur={() => blur('capacity')}
         keyboardType="numeric"
         maxLength={2}
         error={errorText('capacity')}
@@ -151,7 +113,7 @@ export default function VehicleScreen() {
       <ImagePickerField
         label={t.vehicle.photo}
         value={form.photo}
-        onChange={(uri) => setAndTouch('photo', uri)}
+        onChange={(uri) => setSel('photo', uri)}
         cameraText={t.vehicle.camera}
         galleryText={t.vehicle.gallery}
         permissionText={t.vehicle.permission}
