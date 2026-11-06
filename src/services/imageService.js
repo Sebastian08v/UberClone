@@ -9,17 +9,17 @@ export const IMAGE_FOLDERS = {
 };
 
 // Sube una imagen local a Cloudinary y devuelve su URL pública (https)
-export function uploadImage(uri, folder) {
+export function uploadImage(uri, folder, label) {
   return new Promise((resolve, reject) => {
-        const isPng = uri.toLowerCase().endsWith('.png');
+    const isPng = uri.toLowerCase().endsWith('.png');
     const extension = isPng ? 'png' : 'jpg';
-    const folderName = folder.split('/').pop(); // profile, vehicle, documents
+    const uniqueId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
     const formData = new FormData();
     formData.append('file', {
       uri,
       type: isPng ? 'image/png' : 'image/jpeg',
-      name: `${folderName}_${Date.now()}.${extension}`,
+      name: `${label}_${uniqueId}.${extension}`,
     });
     formData.append('upload_preset', UPLOAD_PRESET);
     formData.append('asset_folder', folder);

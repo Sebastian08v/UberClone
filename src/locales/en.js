@@ -53,6 +53,7 @@ export default {
     expired: 'The expiration date must be after today',
     emailTaken: 'This email is already registered',
     registerFailed: 'Registration could not be completed. Please try again.',
+    termsRequired: 'You must accept the terms and conditions',
   },
     personalData: {
     title: 'Personal data',
@@ -98,5 +99,25 @@ export default {
     red: 'Red',
     blue: 'Blue',
     other: 'Other',
+  },
+  registration: {
+    continue: 'Continue registration',
+  },
+  documents: {
+    title: 'Documents and payments',
+    licenseNumber: 'Driver license number',
+    licensePhoto: 'Driver license photo',
+    licenseExpiry: 'License expiration date',
+    soatPhoto: 'SOAT photo',
+    soatExpiry: 'SOAT expiration date',
+    rtmPhoto: 'Technical inspection photo',
+    rtmExpiry: 'Technical inspection expiration date',
+    mercadoPagoEmail: 'Your Mercado Pago account email',
+    termsText:'I accept the terms and conditions. The platform charges a {rate}% commission on each trip fare.',
+    camera: 'Camera',
+    gallery: 'Gallery',
+    permission: 'You need to grant permission to continue',
+    selectDate: 'Select a date',
+    simulateRegister: 'Simulate registration',
   },
 };

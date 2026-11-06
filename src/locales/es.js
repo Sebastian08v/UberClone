@@ -53,6 +53,7 @@ export default {
     expired: 'La fecha de vencimiento debe ser posterior a hoy',
     emailTaken: 'Este correo ya está registrado',
     registerFailed: 'No se pudo completar el registro. Intenta de nuevo.',
+    termsRequired: 'Debes aceptar los términos y condiciones',
   },
     personalData: {
     title: 'Datos personales',
@@ -98,5 +99,25 @@ export default {
     red: 'Rojo',
     blue: 'Azul',
     other: 'Otro',
+  },
+  registration: {
+    continue: 'Continuar registro',
+  },
+  documents: {
+    title: 'Documentos y pagos',
+    licenseNumber: 'Número de licencia de conducción',
+    licensePhoto: 'Foto de la licencia de conducción',
+    licenseExpiry: 'Vencimiento de la licencia',
+    soatPhoto: 'Foto del SOAT',
+    soatExpiry: 'Vencimiento del SOAT',
+    rtmPhoto: 'Foto de la revisión técnico-mecánica',
+    rtmExpiry: 'Vencimiento de la revisión técnico-mecánica',
+    mercadoPagoEmail: 'Correo de tu cuenta de Mercado Pago',
+    termsText:'Acepto los términos y condiciones. La plataforma cobra una comisión del {rate}% sobre la tarifa de cada viaje.',
+    camera: 'Cámara',
+    gallery: 'Galería',
+    permission: 'Necesitas dar permiso para continuar',
+    selectDate: 'Selecciona una fecha',
+    simulateRegister: 'Simular registro',
   },
 };

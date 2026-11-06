@@ -89,3 +89,15 @@ export const validateExpiryDate = (date) => {
   if (expiry <= today) return 'expired';
   return null;
 };
+
+// Años desde el año del vehículo a partir de los cuales aplica la revisión técnico-mecánica
+export const RTM_REQUIRED_AFTER_YEARS = 5;
+
+// Si el año del vehículo aún no es válido, la revisión se trata como obligatoria
+export const isRtmRequired = (vehicleYear) => {
+  if (!/^\d{4}$/.test(String(vehicleYear))) return true;
+  return new Date().getFullYear() - Number(vehicleYear) >= RTM_REQUIRED_AFTER_YEARS;
+};
+
+export const validateTerms = (accepted) =>
+  accepted === true ? null : 'termsRequired';
