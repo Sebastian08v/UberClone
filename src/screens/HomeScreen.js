@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -6,18 +6,20 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import useTripRequests from '../hooks/useTripRequests';
 import MapView, { Marker } from 'react-native-maps';
+import { useNavigation } from '@react-navigation/native';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { SessionContext } from '../context/SessionContext';
 import useDriverLocation from '../hooks/useDriverLocation';
+import useTripRequests from '../hooks/useTripRequests';
 import {
   updateDriverAvailability,
   updateDriverLocation,
 } from '../services/driverService';
 
 export default function HomeScreen() {
+  const navigation = useNavigation();
   const { driver, approvalStatus, setApprovalStatus } =
     useContext(SessionContext);
   const driverId = driver?.id;
@@ -25,11 +27,17 @@ export default function HomeScreen() {
   const [available, setAvailable] = useState(false);
   const { location, error } = useDriverLocation(available);
   const isApproved = approvalStatus === 'approved';
-  const { requests, error1 } = useTripRequests(available);
+  const { requests } = useTripRequests(available);
+  const lastRequestId = useRef(null);
 
+  // Abre la solicitud entrante cuando llega una nueva
   useEffect(() => {
-    console.log('Solicitudes:', requests.length, error1);
-  }, [requests, error1]);
+    if (requests.length > 0 && requests[0].id !== lastRequestId.current) {
+      lastRequestId.current = requests[0].id;
+      navigation.navigate('IncomingRequestScreen', { request: requests[0] });
+    }
+  }, [requests, navigation]);
+
   // Escucha en tiempo real el estado de aprobación en Firestore
   useEffect(() => {
     if (!driverId) return;
