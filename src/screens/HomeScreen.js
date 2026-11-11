@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import useTripRequests from '../hooks/useTripRequests';
 import MapView, { Marker } from 'react-native-maps';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
@@ -24,7 +25,11 @@ export default function HomeScreen() {
   const [available, setAvailable] = useState(false);
   const { location, error } = useDriverLocation(available);
   const isApproved = approvalStatus === 'approved';
+  const { requests, error1 } = useTripRequests(available);
 
+  useEffect(() => {
+    console.log('Solicitudes:', requests.length, error1);
+  }, [requests, error1]);
   // Escucha en tiempo real el estado de aprobación en Firestore
   useEffect(() => {
     if (!driverId) return;
