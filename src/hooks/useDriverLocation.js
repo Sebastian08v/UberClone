@@ -7,8 +7,6 @@ export default function useDriverLocation(enabled = true) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!enabled) return;
-
     let watchId = null;
     let cancelled = false;
 
@@ -24,6 +22,21 @@ export default function useDriverLocation(enabled = true) {
       }
 
       if (cancelled) return;
+
+      // Posición inicial: siempre, para que el mapa pinte aunque no esté Disponible
+      Geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        (err) => setError(err.message),
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      );
+
+      // Seguimiento continuo: solo si está Disponible
+      if (!enabled) return;
 
       watchId = Geolocation.watchPosition(
         (position) => {

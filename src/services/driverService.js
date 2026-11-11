@@ -1,4 +1,4 @@
-import {collection,addDoc,getDocs,query,where,limit,serverTimestamp} from 'firebase/firestore';
+import {collection,addDoc,getDocs,query,where,limit,serverTimestamp,doc,updateDoc} from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { uploadImage, IMAGE_FOLDERS } from './imageService';
 import { isRtmRequired } from '../utils/validators';
@@ -82,3 +82,14 @@ export async function registerDriver({ personal, vehicle, documents, language })
 
   return docRef.id;
 }
+export const updateDriverAvailability = (driverId, available) =>
+  updateDoc(doc(db, 'drivers', driverId), {
+    available,
+    updatedAt: serverTimestamp(),
+  });
+
+export const updateDriverLocation = (driverId, latitude, longitude) =>
+  updateDoc(doc(db, 'drivers', driverId), {
+    location: { latitude, longitude },
+    locationUpdatedAt: serverTimestamp(),
+  });
