@@ -1,3 +1,4 @@
+// AI-assisted: see docs/AI_LOG.md #8. 
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';

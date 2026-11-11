@@ -1,3 +1,4 @@
+// AI-assisted: see docs/AI_LOG.md #8. 
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 
 export default function FormField({ label, value, onChangeText, error, ...rest }) {

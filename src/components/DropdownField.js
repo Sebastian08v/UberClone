@@ -1,3 +1,4 @@
+// AI-assisted: see docs/AI_LOG.md #8. 
 import { View, Text, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 

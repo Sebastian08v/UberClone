@@ -7,6 +7,7 @@ import { SessionProvider, SessionContext } from './src/context/SessionContext';
 import { TripProvider } from './src/context/TripContext';
 
 function AppContent() {
+  // AI-assisted: see docs/AI_LOG.md #5. 
   const { approvalStatus } = useContext(SessionContext);
 
   return (

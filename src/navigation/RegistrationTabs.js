@@ -1,3 +1,4 @@
+// AI-assisted: see docs/AI_LOG.md #7. 
 import React, {useContext} from 'react';
 import { SessionContext } from '../context/SessionContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -15,9 +16,11 @@ const ICONOS = {
 };
 
 export default function RegistrationTabs() {
+  // AI-assisted: see docs/AI_LOG.md #7. 
   const { t } = useContext(SessionContext);
   return (
     <Tab.Navigator
+    // AI-assisted: see docs/AI_LOG.md #4. 
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           const [activo, inactivo] = ICONOS[route.name];
@@ -31,6 +34,7 @@ export default function RegistrationTabs() {
         },
       })}
     >
+    {/* AI-assisted: see docs/AI_LOG.md #7. */} 
       <Tab.Screen
         name="PersonalData"
         component={PersonalDataScreen}

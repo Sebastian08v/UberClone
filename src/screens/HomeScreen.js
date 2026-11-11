@@ -3,6 +3,7 @@ import { View, Text, Button } from 'react-native';
 import { SessionContext } from '../context/SessionContext';
 
 export default function HomeScreen({ navigation }) {
+  // AI-assisted: see docs/AI_LOG.md #6. 
   const { approvalStatus, setApprovalStatus, t } = useContext(SessionContext);
 
   return (

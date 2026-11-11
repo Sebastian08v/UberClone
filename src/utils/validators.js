@@ -1,5 +1,5 @@
 // Cada validador devuelve null si es válido, o una clave de traducción si no.
-
+// AI-assisted: see docs/AI_LOG.md #9. 
 export const required = (value) => {
   if (value === null || value === undefined) return 'required';
   if (typeof value === 'string' && value.trim() === '') return 'required';
