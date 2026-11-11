@@ -1,45 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  PermissionsAndroid,
-  Platform,
-} from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import Geolocation from '@react-native-community/geolocation';
+import useDriverLocation from '../hooks/useDriverLocation';
 
 export default function HomeScreen() {
-  const [location, setLocation] = useState(null);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    const getLocation = async () => {
-      if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        );
-        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-          setError('Permiso de ubicación denegado');
-          return;
-        }
-      }
-
-      Geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
-        },
-        (err) => setError(err.message),
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-      );
-    };
-
-    getLocation();
-  }, []);
+  const { location, error } = useDriverLocation();
 
   if (error) {
     return (
