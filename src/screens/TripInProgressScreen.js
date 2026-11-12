@@ -13,12 +13,16 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
+import { useNavigation } from '@react-navigation/native';
 import { TripContext } from '../context/TripContext';
 import useDriverLocation from '../hooks/useDriverLocation';
 import { getRoute } from '../services/mapService';
-import { updateTripStatus } from '../services/tripService';
+import { updateTripStatus, completeTrip } from '../services/tripService';
+import { calculateFare } from '../utils/calculateFare';
+import {COMMISSION_RATE} from '../config/pricing';
 
 export default function TripInProgressScreen() {
+  const navigation = useNavigation();
   const { activeTrip, setActiveTrip } = useContext(TripContext);
   const { location, error } = useDriverLocation(true);
 
@@ -29,7 +33,6 @@ export default function TripInProgressScreen() {
   const mapRef = useRef(null);
 
   const isOnBoard = activeTrip?.status === 'in_progress';
-  // Punto al que se dirige el conductor según la fase del viaje
   const target = activeTrip
     ? isOnBoard
       ? activeTrip.destination
@@ -44,8 +47,7 @@ export default function TripInProgressScreen() {
       .catch((e) => setRouteError(e.message));
   }, [activeTrip?.id]);
 
-  // 2. Primera ruta (UNA sola vez): hacia la recogida o, si se reabre
-  //    la pantalla con el viaje ya en curso, hacia el destino
+  // 2. Primera ruta (UNA sola vez)
   useEffect(() => {
     if (!location || !target || routeRequested.current) return;
     routeRequested.current = true;
@@ -83,6 +85,35 @@ export default function TripInProgressScreen() {
       setBusy(false);
     }
   }, [location, busy, activeTrip, setActiveTrip]);
+
+  // 5. Finalizar viaje: calcula tarifa, guarda commissionRate y pasa a completed
+  const handleFinishTrip = useCallback(async () => {
+    if (busy) return;
+    setBusy(true);
+    setRouteError(null);
+    try {
+      const tip = 0;
+      const { fare, commission, driverEarnings } = calculateFare({
+        distanceKm: activeTrip.distanceKm,
+        durationMin: activeTrip.durationMin,
+        category: activeTrip.category,
+        tip,
+      });
+      const data = {
+        fare,
+        commission,
+        tip,
+        driverEarnings,
+        commissionRate: COMMISSION_RATE,
+      };
+      await completeTrip(activeTrip.id, data);
+      setActiveTrip({ ...activeTrip, ...data, status: 'completed' });
+      navigation.goBack(); // En el commit 34 aquí se abre el resumen del cobro
+    } catch (e) {
+      setRouteError(e.message);
+      setBusy(false);
+    }
+  }, [busy, activeTrip, setActiveTrip, navigation]);
 
   if (!activeTrip) {
     return (
@@ -146,13 +177,21 @@ export default function TripInProgressScreen() {
         )}
         {routeError && <Text style={styles.error}>{routeError}</Text>}
 
-        {!isOnBoard && (
+        {!isOnBoard ? (
           <TouchableOpacity
             style={[styles.btn, busy && styles.btnDisabled]}
             onPress={handlePassengerOnBoard}
             disabled={busy}
           >
             <Text style={styles.btnText}>Pasajero a bordo</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[styles.btn, styles.btnFinish, busy && styles.btnDisabled]}
+            onPress={handleFinishTrip}
+            disabled={busy}
+          >
+            <Text style={styles.btnText}>Finalizar viaje</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -184,6 +223,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
+  btnFinish: { backgroundColor: '#c62828' },
   btnDisabled: { opacity: 0.5 },
   btnText: { color: '#fff', fontWeight: 'bold' },
 });

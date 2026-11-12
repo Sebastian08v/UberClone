@@ -47,3 +47,11 @@ export async function rejectTrip(tripId) {
 export async function updateTripStatus(tripId, status) {
   return updateDoc(doc(db, 'trips', tripId), { status });
 }
+
+export async function completeTrip(tripId, data) {
+  return updateDoc(doc(db, 'trips', tripId), {
+    ...data,
+    status: 'completed',
+    completedAt: serverTimestamp(),
+  });
+}

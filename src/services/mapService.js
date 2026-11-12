@@ -1,4 +1,4 @@
-const API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
+const API_KEY = process.env.EXPO_PUBLIC_GOOGLE_ROUTES_API_KEY;
 
 // Convierte el texto comprimido de Google en una lista de coordenadas
 function decodePolyline(encoded) {
@@ -33,25 +33,52 @@ function decodePolyline(encoded) {
 }
 
 // origin y destination: { latitude, longitude }
+// Usa Routes API (reemplazo de Directions API)
 export async function getRoute(origin, destination) {
-  const url =
-    'https://maps.googleapis.com/maps/api/directions/json' +
-    `?origin=${origin.latitude},${origin.longitude}` +
-    `&destination=${destination.latitude},${destination.longitude}` +
-    `&mode=driving&key=${API_KEY}`;
+  const response = await fetch(
+    'https://routes.googleapis.com/directions/v2:computeRoutes',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': API_KEY,
+        // Solo pedimos los campos que usamos (obligatorio en Routes API)
+        'X-Goog-FieldMask':
+          'routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline',
+      },
+      body: JSON.stringify({
+        origin: {
+          location: {
+            latLng: { latitude: origin.latitude, longitude: origin.longitude },
+          },
+        },
+        destination: {
+          location: {
+            latLng: {
+              latitude: destination.latitude,
+              longitude: destination.longitude,
+            },
+          },
+        },
+        travelMode: 'DRIVE',
+      }),
+    }
+  );
 
-  const response = await fetch(url);
   const data = await response.json();
 
-  if (data.status !== 'OK') {
-    throw new Error(data.error_message || data.status);
+  if (!response.ok) {
+    throw new Error(data.error?.message || `Error ${response.status}`);
+  }
+  if (!data.routes || data.routes.length === 0) {
+    throw new Error('No se encontró una ruta');
   }
 
   const route = data.routes[0];
-  const leg = route.legs[0];
   return {
-    coordinates: decodePolyline(route.overview_polyline.points),
-    distanceKm: Math.round(leg.distance.value / 100) / 10,
-    durationMin: Math.round(leg.duration.value / 60),
+    coordinates: decodePolyline(route.polyline.encodedPolyline),
+    distanceKm: Math.round(route.distanceMeters / 100) / 10,
+    // La duración llega como texto, por ejemplo "1320s"
+    durationMin: Math.round(parseInt(route.duration, 10) / 60),
   };
 }
