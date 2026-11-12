@@ -6,6 +6,7 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use('/payments', require('./routes/payments'));
 
 app.get('/', (req, res) => {
   res.json({ ok: true, message: 'UberClone backend funcionando' });
