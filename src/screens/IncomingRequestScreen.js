@@ -39,7 +39,7 @@ export default function IncomingRequestScreen({ route, navigation }) {
     try {
       await acceptTrip(request.id, driver?.id);
       setActiveTrip({ ...request, status: 'accepted', driverId: driver?.id });
-      navigation.goBack(); 
+      navigation.replace('TripInProgress');
     } catch (e) {
       handled.current = false;
       console.log('Error al aceptar:', e.message);

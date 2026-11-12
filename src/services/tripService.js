@@ -43,3 +43,7 @@ export async function rejectTrip(tripId) {
     status: 'rejected',
   });
 }
+
+export async function updateTripStatus(tripId, status) {
+  return updateDoc(doc(db, 'trips', tripId), { status });
+}
