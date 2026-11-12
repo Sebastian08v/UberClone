@@ -1,5 +1,17 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+} from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { TripContext } from '../context/TripContext';
 import useDriverLocation from '../hooks/useDriverLocation';
@@ -12,8 +24,17 @@ export default function TripInProgressScreen() {
 
   const [route, setRoute] = useState(null);
   const [routeError, setRouteError] = useState(null);
+  const [busy, setBusy] = useState(false);
   const routeRequested = useRef(false);
   const mapRef = useRef(null);
+
+  const isOnBoard = activeTrip?.status === 'in_progress';
+  // Punto al que se dirige el conductor según la fase del viaje
+  const target = activeTrip
+    ? isOnBoard
+      ? activeTrip.destination
+      : activeTrip.origin
+    : null;
 
   // 1. Al entrar: accepted -> driver_arriving
   useEffect(() => {
@@ -23,27 +44,45 @@ export default function TripInProgressScreen() {
       .catch((e) => setRouteError(e.message));
   }, [activeTrip?.id]);
 
-  // 2. Cuando hay ubicación: pedir la ruta UNA sola vez
+  // 2. Primera ruta (UNA sola vez): hacia la recogida o, si se reabre
+  //    la pantalla con el viaje ya en curso, hacia el destino
   useEffect(() => {
-    if (!location || !activeTrip || routeRequested.current) return;
+    if (!location || !target || routeRequested.current) return;
     routeRequested.current = true;
-    getRoute(location, {
-      latitude: activeTrip.origin.lat,
-      longitude: activeTrip.origin.lng,
-    })
+    getRoute(location, { latitude: target.lat, longitude: target.lng })
       .then(setRoute)
       .catch((e) => setRouteError(e.message));
-  }, [location, activeTrip]);
+  }, [location, target]);
 
   // 3. Ajustar el mapa para que se vea toda la ruta
   useEffect(() => {
     if (route && mapRef.current) {
       mapRef.current.fitToCoordinates(route.coordinates, {
-        edgePadding: { top: 80, right: 50, bottom: 200, left: 50 },
+        edgePadding: { top: 80, right: 50, bottom: 220, left: 50 },
         animated: true,
       });
     }
   }, [route]);
+
+  // 4. Pasajero a bordo: in_progress y ruta nueva hacia el destino
+  const handlePassengerOnBoard = useCallback(async () => {
+    if (!location || busy) return;
+    setBusy(true);
+    setRouteError(null);
+    try {
+      await updateTripStatus(activeTrip.id, 'in_progress');
+      setActiveTrip({ ...activeTrip, status: 'in_progress' });
+      const newRoute = await getRoute(location, {
+        latitude: activeTrip.destination.lat,
+        longitude: activeTrip.destination.lng,
+      });
+      setRoute(newRoute);
+    } catch (e) {
+      setRouteError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }, [location, busy, activeTrip, setActiveTrip]);
 
   if (!activeTrip) {
     return (
@@ -82,12 +121,9 @@ export default function TripInProgressScreen() {
         showsUserLocation
       >
         <Marker
-          coordinate={{
-            latitude: activeTrip.origin.lat,
-            longitude: activeTrip.origin.lng,
-          }}
-          title="Punto de recogida"
-          description={activeTrip.origin.address}
+          coordinate={{ latitude: target.lat, longitude: target.lng }}
+          title={isOnBoard ? 'Destino' : 'Punto de recogida'}
+          description={target.address}
         />
         {route && (
           <Polyline
@@ -99,14 +135,26 @@ export default function TripInProgressScreen() {
       </MapView>
 
       <View style={styles.panel}>
-        <Text style={styles.title}>Hacia el punto de recogida</Text>
-        <Text>{activeTrip.origin.address}</Text>
+        <Text style={styles.title}>
+          {isOnBoard ? 'Hacia el destino' : 'Hacia el punto de recogida'}
+        </Text>
+        <Text>{target.address}</Text>
         {route && (
           <Text style={styles.info}>
             {route.distanceKm} km · {route.durationMin} min
           </Text>
         )}
         {routeError && <Text style={styles.error}>{routeError}</Text>}
+
+        {!isOnBoard && (
+          <TouchableOpacity
+            style={[styles.btn, busy && styles.btnDisabled]}
+            onPress={handlePassengerOnBoard}
+            disabled={busy}
+          >
+            <Text style={styles.btnText}>Pasajero a bordo</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -129,4 +177,13 @@ const styles = StyleSheet.create({
   title: { fontSize: 18, fontWeight: 'bold', marginBottom: 4 },
   info: { marginTop: 6, fontWeight: 'bold' },
   error: { marginTop: 6, color: '#c62828' },
+  btn: {
+    marginTop: 12,
+    backgroundColor: '#1a7f37',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  btnDisabled: { opacity: 0.5 },
+  btnText: { color: '#fff', fontWeight: 'bold' },
 });
