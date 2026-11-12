@@ -18,7 +18,7 @@ export default function RootNavigator(){
             />
 
             <Stack.Screen
-                name = "IncomingRequest"
+                name = "IncomingRequestScreen"
                 component = {IncomingRequestScreen}
             />
 

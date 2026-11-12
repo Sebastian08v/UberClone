@@ -5,11 +5,13 @@ import {
   Switch,
   StyleSheet,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import { createTestTrip } from '../services/tripService';
 import { SessionContext } from '../context/SessionContext';
 import useDriverLocation from '../hooks/useDriverLocation';
 import useTripRequests from '../hooks/useTripRequests';
@@ -28,13 +30,14 @@ export default function HomeScreen() {
   const { location, error } = useDriverLocation(available);
   const isApproved = approvalStatus === 'approved';
   const { requests } = useTripRequests(available);
-  const lastRequestId = useRef(null);
+  const seenIds = useRef(new Set());
 
-  // Abre la solicitud entrante cuando llega una nueva
   useEffect(() => {
-    if (requests.length > 0 && requests[0].id !== lastRequestId.current) {
-      lastRequestId.current = requests[0].id;
-      navigation.navigate('IncomingRequestScreen', { request: requests[0] });
+  // Busca la primera solicitud que todavía no se ha mostrado
+    const next = requests.find((r) => !seenIds.current.has(r.id));
+    if (next) {
+      seenIds.current.add(next.id);
+      navigation.navigate('IncomingRequestScreen', { request: next });
     }
   }, [requests, navigation]);
 
@@ -102,6 +105,10 @@ export default function HomeScreen() {
         {!isApproved && (
           <Text style={styles.hint}>Pendiente de aprobación</Text>
         )}
+        {/* TEMPORAL: para desarrollo agil */}
+        <TouchableOpacity style={styles.testBtn} onPress={createTestTrip}>
+          <Text style={styles.testBtnText}>+ Solicitud de prueba</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -124,4 +131,12 @@ const styles = StyleSheet.create({
   },
   status: { fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
   hint: { marginTop: 8, color: 'gray' },
+  testBtn: {
+    marginTop: 12,
+    backgroundColor: '#eee',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+  testBtnText: { color: '#333' },
 });
