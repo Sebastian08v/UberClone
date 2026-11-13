@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { View, Text, Button, ActivityIndicator, StyleSheet } from 'react-native';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import { TripContext } from '../context/TripContext';
 import { openCheckout } from '../services/paymentService';
 import { markCashPaid } from '../services/tripService';
 import formatCurrency from '../utils/formatCurrency';
@@ -18,8 +19,9 @@ function getPaymentLabel(trip) {
   }
 }
 
-export default function PaymentSummaryScreen({ route }) {
+export default function PaymentSummaryScreen({ route, navigation }) {
   const { tripId } = route.params;
+  const { setActiveTrip } = useContext(TripContext);
   const [trip, setTrip] = useState(null);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -59,6 +61,12 @@ export default function PaymentSummaryScreen({ route }) {
   }
 };
 
+// AI-assisted: see docs/AI_LOG.md
+const handleGoHome = () => {
+  setActiveTrip(null); // limpia el viaje activo del contexto
+  navigation.navigate('Home');
+};
+
   if (error) {
     return (
       <View style={styles.center}>
@@ -77,7 +85,8 @@ export default function PaymentSummaryScreen({ route }) {
 
   const label = getPaymentLabel(trip);
   const canPay = trip.status === 'completed' && trip.paymentMethod !== 'cash';
-const canCollectCash = trip.status === 'completed' && trip.paymentMethod === 'cash';
+  const canCollectCash = trip.status === 'completed' && trip.paymentMethod === 'cash';
+  const isPaid = trip.status === 'paid';
 
   return (
     <View style={styles.container}>
@@ -104,6 +113,7 @@ const canCollectCash = trip.status === 'completed' && trip.paymentMethod === 'ca
       {canCollectCash && (
         <Button title="Cobro recibido (efectivo)" onPress={handleCashReceived} disabled={busy} />
       )}
+      {isPaid && <Button title="Volver al inicio" onPress={handleGoHome} />}
     </View>
   );
 }
