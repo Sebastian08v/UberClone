@@ -120,4 +120,16 @@ export default {
     selectDate: 'Select a date',
     simulateRegister: 'Simulate registration',
   },
+    earnings: {
+    today: 'Today',
+    week: 'This week',
+    month: 'This month',
+    balance: 'Driver balance',
+    trips: 'Trips',
+    billed: 'Total billed',
+    commissions: 'Commissions',
+    tips: 'Tips',
+    net: 'Net earnings',
+    average: 'Average per trip',
+  },
 };

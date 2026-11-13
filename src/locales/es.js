@@ -120,4 +120,16 @@ export default {
     selectDate: 'Selecciona una fecha',
     simulateRegister: 'Simular registro',
   },
+    earnings: {
+    today: 'Hoy',
+    week: 'Esta semana',
+    month: 'Este mes',
+    balance: 'Saldo del conductor',
+    trips: 'Viajes',
+    billed: 'Total facturado',
+    commissions: 'Comisiones',
+    tips: 'Propinas',
+    net: 'Ganancia neta',
+    average: 'Promedio por viaje',
+  },
 };
