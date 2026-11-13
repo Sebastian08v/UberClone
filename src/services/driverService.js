@@ -98,3 +98,70 @@ export async function getDriverStatus(driverId) {
   if (!snap.exists()) return null;
   return { approvalStatus: snap.data().approvalStatus };
 }
+
+// AI-assisted: see docs/AI_LOG.md
+export async function getDriverProfile(driverId) {
+  const snap = await getDoc(doc(db, 'drivers', driverId));
+  return snap.exists() ? snap.data() : null;
+}
+
+// Solo sube a Cloudinary las fotos nuevas (uri local); las que ya son URL se conservan
+const uploadIfNew = (uri, folder, label) =>
+  uri && !uri.startsWith('http')
+    ? uploadImage(uri, folder, label)
+    : Promise.resolve(uri);
+
+// AI-assisted: see docs/AI_LOG.md
+export async function updateDriverProfile(driverId, f, language) {
+  const email = f.email.trim().toLowerCase();
+
+  const existing = await getDocs(
+    query(driversRef, where('email', '==', email), limit(1))
+  );
+  if (!existing.empty && existing.docs[0].id !== driverId) {
+    throw new Error('emailTaken');
+  }
+
+  const rtmRequired = isRtmRequired(f.year);
+
+  const [profilePhotoUrl, vehiclePhotoUrl, licensePhotoUrl, soatPhotoUrl, rtmPhotoUrl] =
+    await Promise.all([
+      uploadIfNew(f.profilePhoto, IMAGE_FOLDERS.profile, 'profile'),
+      uploadIfNew(f.vehiclePhoto, IMAGE_FOLDERS.vehicle, 'vehicle'),
+      uploadIfNew(f.licensePhoto, IMAGE_FOLDERS.documents, 'license'),
+      uploadIfNew(f.soatPhoto, IMAGE_FOLDERS.documents, 'soat'),
+      rtmRequired
+        ? uploadIfNew(f.rtmPhoto, IMAGE_FOLDERS.documents, 'technical-review')
+        : Promise.resolve(null),
+    ]);
+
+  await updateDoc(doc(db, 'drivers', driverId), {
+    fullName: f.fullName.trim(),
+    idNumber: f.idNumber,
+    phone: f.phone,
+    birthDate: f.birthDate,
+    gender: f.gender,
+    email,
+    language,
+    profilePhotoUrl,
+    'vehicle.category': f.category,
+    'vehicle.plate': f.plate.trim().toUpperCase(),
+    'vehicle.brand': f.brand.trim(),
+    'vehicle.model': f.model.trim(),
+    'vehicle.year': Number(f.year),
+    'vehicle.color': f.color,
+    'vehicle.capacity': Number(f.capacity),
+    'vehicle.photoUrl': vehiclePhotoUrl,
+    'documents.license': {
+      number: f.licenseNumber.trim(),
+      photoUrl: licensePhotoUrl,
+      expiryDate: f.licenseExpiry,
+    },
+    'documents.soat': { photoUrl: soatPhotoUrl, expiryDate: f.soatExpiry },
+    'documents.technicalReview': rtmRequired
+      ? { required: true, photoUrl: rtmPhotoUrl, expiryDate: f.rtmExpiry }
+      : { required: false },
+    mercadoPagoEmail: f.mercadoPagoEmail.trim().toLowerCase(),
+    updatedAt: serverTimestamp(),
+  });
+}

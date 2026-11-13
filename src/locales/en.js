@@ -35,6 +35,10 @@ export default {
   },
   profile: {
     title: 'Profile and settings',
+    save: 'Save changes',
+    saved: 'Changes saved',
+    signOut: 'Sign out',
+    loadFailed: 'Your profile could not be loaded',
   },
     errors: {
     required: 'This field is required',

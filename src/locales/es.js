@@ -35,6 +35,10 @@ export default {
   },
   profile: {
     title: 'Perfil y configuración',
+    save: 'Guardar cambios',
+    saved: 'Cambios guardados',
+    signOut: 'Cerrar sesión',
+    loadFailed: 'No se pudo cargar tu perfil',
   },
     errors: {
     required: 'Este campo es obligatorio',
