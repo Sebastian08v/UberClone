@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { Alert } from 'react-native';
 import {
   getLanguage,
   saveLanguage,
@@ -7,6 +8,12 @@ import {
   clearSession,
 } from '../services/storage';
 import { getDriverStatus } from '../services/driverService';
+import {
+  registerDriverFcmToken,
+  subscribeForegroundNotifications,
+  subscribeNotificationOpened,
+  getInitialNotification,
+} from '../services/notificationService';
 import es from '../locales/es';
 import en from '../locales/en';
 
@@ -62,6 +69,38 @@ export function SessionProvider({ children }) {
       clearSession();
     }
   }, [driver, approvalStatus, loading]);
+
+  // AI-assisted: see docs/AI_LOG.md #41
+  // Registra el token FCM y escucha notificaciones cuando hay un conductor activo
+  useEffect(() => {
+    if (!driver?.id) return;
+
+    registerDriverFcmToken(driver.id).catch((err) =>
+      console.warn('Error registrando token FCM:', err)
+    );
+
+    const unsubscribeForeground = subscribeForegroundNotifications((remoteMessage) => {
+      Alert.alert(
+        remoteMessage.notification?.title || 'Nueva solicitud de viaje',
+        remoteMessage.notification?.body || 'Tienes una solicitud pendiente.'
+      );
+    });
+
+    const unsubscribeOpened = subscribeNotificationOpened((remoteMessage) => {
+      console.log('App abierta desde notificación:', remoteMessage.data);
+    });
+
+    getInitialNotification().then((remoteMessage) => {
+      if (remoteMessage) {
+        console.log('App iniciada desde notificación cerrada:', remoteMessage.data);
+      }
+    });
+
+    return () => {
+      unsubscribeForeground();
+      unsubscribeOpened();
+    };
+  }, [driver?.id]);
 
   // Para el botón "Cerrar sesión" (commit 40)
   const signOut = () => {

@@ -305,42 +305,132 @@ Integrante: Sebastian Galeano
 Herramienta: Claude
 Objetivo: Subir las fotos de perfil y de vehículo a Cloudinary, en carpetas separadas por tipo, y guardar sus URL (commit 19)
 Prompt:
-"ya hice la cuneta de cloudinary y este el el clud name: vew3ubds, me gustaria hacer una division de carpetas para cada tipo de foto, ayudame con codigo,"
-"me aparece que no se puede completar el registro"
-"Android Bundled 2351ms index.js (1647 modules) WARN DateTimePicker: onChange is deprecated. Use onValueChange, onDismiss, and onNeutralButtonPress instead. LOG REGISTER ERROR: [Error: Unsupported FormDataPart implementation]"
-"LOG CLOUDINARY RESPONSE: {"error": {"message": "Upload preset must be whitelisted for unsigned uploads"}} LOG REGISTER ERROR: [Error: uploadFailed] LOG CLOUDINARY RESPONSE: {"error": {"message": "Upload preset must be whitelisted for unsigned uploads"}}"
-"ya da, el problema es que carga la misma url para perfil y vehiculo"
-"la dos terminan en upload.jpg y solo hay una foto subida"
-"ya se ven las dos fotos diferentes"
+"ya hice la cuneta de cloudinary y este el el clud name: vew3ubds, me gustaria hacer una division de carpetas para cada tipo de foto, ayudame con un paso a paso"
 Resumen de la respuesta: Claude indicó crear un preset sin firma, guardar el nombre en .env y entregó imageService.uploadImage con carpetas uberclone/profile, uberclone/vehicle y uberclone/documents. Después ayudó a resolver tres fallos: el fetch de Expo no aceptaba el archivo en FormData (se cambió a XMLHttpRequest), el preset estaba en modo Signed (se cambió a Unsigned) y las dos fotos se llamaban upload.jpg y Cloudinary devolvía la primera (nombre único por foto y ajuste del preset).
 Qué se usó / modificó / descartó: Se usó imageService con XMLHttpRequest, el nombre de archivo único y las variables de .env. Se descartó la primera versión con fetch y FormData, que fallaba en esta versión de Expo.
-Archivos y commit: src/services/imageService.js, src/services/driverService.js, .env.example — [COMPLETAR hash]
-Verificación: Tras corregir, las URL de perfil y vehículo quedaron distintas en Firestore y cada una muestra su foto. [COMPLETAR si revisaste las carpetas en Media Library de Cloudinary]
-Aprendizaje: [REDACTAR con tus palabras] Borrador: los mensajes de error reales se ven con un console.log temporal; una subida sin firma nunca sobrescribe, así que los nombres de archivo deben ser únicos.
+Archivos y commit: src/services/imageService.js, src/services/driverService.js, .env.example
+Verificación: Tras corregir, las URL de perfil y vehículo quedaron distintas en Firestore y cada una muestra su foto. 
+Aprendizaje: los mensajes de error reales se ven con un console.log temporal; una subida sin firma nunca sobrescribe, así que los nombres de archivo deben ser únicos.
 ## Entrada #14
 Fecha: 2026-11-06
 Integrante: Sebastian Galeano
 Herramienta: Claude
 Objetivo: Construir la pestaña 3 (Documentos y pagos) con licencia, SOAT, revisión técnico-mecánica condicional, correo de Mercado Pago y términos con la comisión leída de pricing.js (commit 16)
 Prompt:
-"sobre la revision tecnico mecanica en colombia son 5 años si el vehiculo es nuevo, a partir de la primera renovacion a los 5 años se debe hacer anual, entonces la logica seria que apartir de la fecha del modelo del vehiculo se cuentan 5 años, si esos 5 años dan despues de la fecha actual no es obligatorio la revision, pero si apartir del año del vehiculo hay mas de 5 años hasta la fecha actual si aplica, ademas la fecha de vencimiento no puede ser el mismo dia del registro, y esto aplica para el soat tambien, si la fecha de vencimiento es el dia del registro no se piede registrar. el checkbox se debe instalar e importar y se debe mostrar al momento en que se da en resgitrar y me muestre ese checbox para acptar los terminos y condiciones, y el porcentaje se debe importar de pricing ya que ese valor puede cambiar, antes de darme codigo, dime si crees que va bien mi logica respecto a esos puntos"
-"1) 5 o mas. 2) se pueden ocultar. 3) obcion a, en la pestaña 3. 4) si. 5) COMMISSION_RATE = 0.20; para tener en cuenta el boton de simular registro debe quedar en la pestaña 3 y y cada pestaña de registro debe decir continuar registro en la siguiente pestaña como una guia del registro, para el conductor"
-"dame todo el codigo, el boton de simular registro debe habilitarse solo cuando todo este diligenciado, no es necesario niingun texto que indique cual pestaña falta, y la navegacion debe ser libre, no se necesita terminar una pestaña para habilitar la siguiente"
-"ya quedo, gracias por la ayuda en esta fase"
+"sobre la revision tecnico mecanica en colombia son 5 años si el vehiculo es nuevo, a partir de la primera renovacion a los 5 años se debe hacer anual, entonces la logica seria que apartir de la fecha del modelo del vehiculo se cuentan 5 años, si esos 5 años dan despues de la fecha actual no es obligatorio la revision, pero si apartir del año del vehiculo hay mas de 5 años hasta la fecha actual si aplica, ademas la fecha de vencimiento no puede ser el mismo dia del registro, y esto aplica para el soat tambien, si la fecha de vencimiento es el dia del registro no se piede registrar. el checkbox se debe instalar e importar y se debe mostrar al momento en que se da en resgitrar y me muestre ese checbox para acptar los terminos y condiciones, y el porcentaje se debe importar de pricing ya que ese valor puede cambiar, dame el paso a paso para desarrollar"
 Resumen de la respuesta: Claude buscó la norma colombiana y confirmó los 5 años, aclaró que la norma cuenta desde la matrícula y no desde el año del modelo, y señaló que el documento ubica el checkbox dentro de la pestaña 3. Tras mis decisiones entregó isRtmRequired, la sección documents del contexto, DocumentsScreen con expo-checkbox, los botones "Continuar registro" y la subida de las fotos de documentos en driverService.
-Qué se usó / modificó / descartó: Se usó el código completo. Se modificó imageService para dar un nombre único a cada foto (etiqueta más texto aleatorio). Se descartó la opción B (checkbox al pulsar registrar) y se eligió la opción A, dentro de la pestaña 3, como indica el documento. El criterio de la revisión es "5 años o más" desde el año del vehículo, decisión mía.
-Archivos y commit: src/utils/validators.js, src/context/RegistrationContext.js, src/screens/DocumentsScreen.js, src/screens/PersonalDataScreen.js, src/screens/VehicleScreen.js, src/services/driverService.js, src/services/imageService.js, src/locales/es.js, src/locales/en.js — [COMPLETAR hash]
-Verificación: [COMPLETAR resultados reales] Pruebas previstas: fechas de ayer y de hoy rechazadas en licencia, SOAT y revisión; con año de vehículo 2021 o anterior aparece la revisión y con 2022 o posterior se oculta; al cambiar COMMISSION_RATE cambia el texto de los términos; en Firestore el documento trae la sección documents con las URL.
-Aprendizaje: [REDACTAR con tus palabras] Borrador: una regla legal real se simplifica al modelar datos (matrícula frente a año del modelo) y hay que decidir y documentar esa aproximación; el valor de la comisión se lee de un solo archivo para no repetirlo.
+Qué se usó / modificó / descartó:  Se modificó imageService para dar un nombre único a cada foto.
+Archivos y commit: src/utils/validators.js, src/context/RegistrationContext.js, src/screens/DocumentsScreen.js, src/screens/PersonalDataScreen.js, src/screens/VehicleScreen.js, src/services/driverService.js, src/services/imageService.js, src/locales/es.js, src/locales/en.js 
+Verificación: fechas de ayer y de hoy rechazadas en licencia, SOAT y revisión; con año de vehículo 2021 o anterior aparece la revisión y con 2022 o posterior se oculta; al cambiar COMMISSION_RATE cambia el texto de los términos; en Firestore el documento trae la sección documents con las URL.
+Aprendizaje:  una regla legal real se simplifica al modelar datos (matrícula frente a año del modelo) y hay que decidir y documentar esa aproximación; el valor de la comisión se lee de un solo archivo para no repetirlo.
 ## Entrada #15
 Fecha: 2026-11-06
 Integrante: Sebastian Galeano
 Herramienta: Claude
 Objetivo: Habilitar el botón de registro solo cuando las tres pestañas estén completas y válidas (commit 17)
 Prompt:
-"dame todo el codigo, el boton de simular registro debe habilitarse solo cuando todo este diligenciado, no es necesario niingun texto que indique cual pestaña falta, y la navegacion debe ser libre, no se necesita terminar una pestaña para habilitar la siguiente" (el mismo prompt de la entrada #14: este código se entregó junto con el de la pestaña 3)
-Resumen de la respuesta: Claude hizo que el botón de DocumentsScreen se deshabilite según isRegistrationValid(), que revisa las tres secciones del contexto, y dejó la navegación libre entre pestañas sin texto de pendientes.
-Qué se usó / modificó / descartó: Se usó tal como se entregó. Se descartó mostrar un texto con la pestaña que falta, por decisión mía.
-Archivos y commit: src/screens/DocumentsScreen.js, src/context/RegistrationContext.js — [COMPLETAR hash; si va dentro del commit del paso anterior, repite ese hash]
-Verificación: El botón permanece deshabilitado mientras falte cualquier campo de las tres pestañas, incluido el checkbox de términos, y se habilita al completar todo. [COMPLETAR si lo probaste así]
-Aprendizaje: [REDACTAR con tus palabras] Borrador: el estado del registro vive en un contexto compartido, así el botón puede revisar las tres pestañas aunque el usuario las visite en cualquier orden.
+"dame el paso a paso para desarrollar el boton de simular registro debe habilitarse solo cuando todo este diligenciado, no es necesario niingun texto que indique cual pestaña falta, y la navegacion debe ser libre, no se necesita terminar una pestaña para habilitar la siguiente" 
+Resumen de la respuesta: Claude dio las instrucciones para que el botón de DocumentsScreen se deshabilite según isRegistrationValid(), que revisa las tres secciones del contexto, y dejó la navegación libre entre pestañas sin texto de pendientes.
+Qué se usó / modificó / descartó: Se descartó mostrar un texto con la pestaña que falta, por decisión mía.
+Archivos y commit: src/screens/DocumentsScreen.js, src/context/RegistrationContext.js
+Verificación: El botón permanece deshabilitado mientras falte cualquier campo de las tres pestañas, incluido el checkbox de términos, y se habilita al completar todo.
+Aprendizaje: el estado del registro vive en un contexto compartido, así el botón puede revisar las tres pestañas aunque el usuario las visite en cualquier orden.
+
+## Entrada #16
+
+Commit: 22 · feat: add useDriverLocation hook
+Fecha: 10 de noviembre de 2026
+Herramienta: Claude
+Archivo: src/hooks/useDriverLocation.js
+
+Qué le pedí a la IA:
+Avanzar con el commit 22 de la guía: un hook personalizado que siga la ubicación del conductor mientras esté activo y que detenga el seguimiento al salir de la pantalla, usando @react-native-community/geolocation.
+Qué generó la IA:
+Una guia para el desarrollo del hook useDriverLocation(enabled) que:
+Pide el permiso ACCESS_FINE_LOCATION en Android.
+Escucha la posición con Geolocation.watchPosition (cada 5 s o 10 m, con alta precisión).
+Guarda location y error en estados con useState.
+Cancela el seguimiento con Geolocation.clearWatch en la función de limpieza del useEffect.
+Usa una bandera cancelled para no arrancar el GPS si el usuario sale mientras responde al cuadro de permiso.
+Cambios posteriores:
+En el commit 23 el hook se ajustó para tomar una posición inicial con getCurrentPosition y activar watchPosition solo si enabled es true, de modo que el mapa se dibuje aunque el conductor esté No disponible.
+Cómo lo validé:
+La pantalla Inicio pasó del indicador de carga al mapa, lo que confirma que el hook devolvió la ubicación del celular.
+## Entrada #17
+Commit: 23 · feat: availability switch
+Fecha: 10 de noviembre de 2026
+Herramienta: Claude (Anthropic)
+Archivos: src/screens/HomeScreen.js, src/services/driverService.js, src/hooks/useDriverLocation.js
+Qué le pedí a la IA:
+Avanzar con el commit 23 de la guía: un interruptor Disponible / No disponible en la pantalla Inicio, bloqueado mientras el conductor no esté Aprobado, que guarde la ubicación en la base de datos mientras esté Disponible.
+Qué generó la IA:
+En driverService.js: las funciones updateDriverAvailability y updateDriverLocation, que actualizan el documento del conductor en Firestore (available, location y marcas de tiempo).
+En HomeScreen.js:
+Un Switch deshabilitado mientras approvalStatus no sea 'approved', con el aviso “Pendiente de aprobación”.
+Un onSnapshot sobre el documento del conductor, para que el interruptor se habilite en tiempo real cuando se aprueba desde Firestore.
+Un useEffect que guarda la ubicación solo mientras el conductor está Disponible.
+En useDriverLocation.js: ajuste para que el hook tome una posición inicial con getCurrentPosition y active watchPosition solo si enabled es true.
+Cómo lo validé:
+Con el conductor en Pendiente de aprobación, el interruptor aparece deshabilitado.
+Al cambiar approvalStatus a approved en Firestore, el interruptor se habilitó.
+
+#### Entrada #18
+Fecha: 2026-11-11
+Integrante: Sebastian Galeano
+Herramienta: Claude
+Objetivo: Escuchar solicitudes de viaje en tiempo real con onSnapshot, mostrar la tarjeta con temporizador de 15 s y manejar aceptación/rechazo con useCallback (Fase 5 — commits #24 al #26)
+Prompt: "vamos con la fase 5 ... como se prueba este commit ... en algun momento las solicitudes son automaticas, o siempre voy a tener que hacerlas manual desde el firestore ... si agregala ... el boton de solicitud de prueba tambien tiene un temporizador?, me refiero a que yo rechazo o acpto pero si ahi mismo le doy en solicitud de prueba, no me deja hasta un momneto despues"
+Resumen de la respuesta: Explicó la suscripción en tiempo real a trips con status 'requested' mediante onSnapshot y limpieza en useEffect, la pantalla IncomingRequestScreen con temporizador de 15 s y botones con useCallback, agregó la función temporal createTestTrip para agilizar las pruebas y corrigió el historial de solicitudes vistas para evitar bloqueos al crear pruebas seguidas.
+Qué se usó / modificó / descartó: Se usó useTripRequests.js, RequestCard.js, IncomingRequestScreen.js, acceptTrip/rejectTrip y createTestTrip en tripService.js. Se modificó HomeScreen.js para registrar los IDs de solicitudes mostradas y evitar esperar a que Firestore actualice el orden de requests[0]. Se descartó depender únicamente de la creación manual de documentos en consola durante las pruebas.
+Archivos y commit: src/hooks/useTripRequests.js, src/components/RequestCard.js, src/screens/IncomingRequestScreen.js, src/services/tripService.js, src/screens/HomeScreen.js — "feat: add useTripRequests hook" / "feat: incoming request screen" / "feat: accept and reject handlers"
+Verificación: Al pulsar + Solicitud de prueba con el interruptor en Disponible se abrió la tarjeta con tarifa $19.200 y ganancia $15.360; al dejar vencer los 15 s o pulsar Rechazar cambió a rejected, y al pulsar Aceptar cambió a accepted con driverId.
+Aprendizaje: En consultas onSnapshot sin ordenamiento explícito, llevar un registro de los IDs ya mostrados en useRef evita bloqueos visuales mientras Firestore propaga el cambio de estado de un documento.
+
+#### Entrada #19
+Fecha: 2026-11-11
+Integrante: Sebastian Galeano
+Herramienta: Claude
+ Objetivo: Implementar la pantalla de viaje en curso con cálculo de rutas hacia recogida y destino, transición de estados y cálculo final de tarifa y comisión (Fase 5 — commits #27 al #29)
+Prompt: "sigamos con el 29"
+Resumen de la respuesta: Guió el flujo de estados driver_arriving -> in_progress -> completed en TripInProgressScreen.js, migró la obtención de rutas a Google Routes API (computeRoutes con X-Goog-FieldMask y decodificación de polilínea) en mapsService.js y conectó completeTrip junto con calculateFare para guardar fare, commission y driverEarnings en Firestore.
+Qué se usó / modificó / descartó: Se usó TripInProgressScreen.js, updateTripStatus/completeTrip en tripService.js y getRoute con Routes API en mapsService.js. Se descartó la API clásica Directions en favor de Routes API v2.
+Archivos y commit: src/screens/TripInProgressScreen.js, src/services/mapsService.js, src/services/tripService.js — "feat: route to pickup" / "feat: passenger on board" / "feat: finish trip and calculate fare"
+Verificación: Al aceptar un viaje pasó a driver_arriving, al pulsar Pasajero a bordo cambió a in_progress y al pulsar Finalizar viaje guardó status: completed, fare: 19200, commission: 3840 y driverEarnings: 15360 en Firestore.
+Aprendizaje: Google Routes API requiere especificar los campos exactos en el encabezado X-Goog-FieldMask y devuelve la polilínea codificada que debe decodificarse a coordenadas para Polyline.
+
+#### Entrada #20
+Fecha: 2026-11-12
+Integrante: Sebastian Galeano
+Herramienta: Claude
+Objetivo: Construir el backend en Express con Mercado Pago Checkout Pro en modo prueba, actualizar el estado del pago en tiempo real, gestionar cobros en efectivo y permitir volver al inicio tras cobrar (Fase 6 — commits #30 al #35)
+Prompt: ayudame a desarroyar el backend de mercado pago, si necesito codigo te lo pido
+Resumen de la respuesta: Implementó el servidor Express con el endpoint de preferencias de Mercado Pago y webhook en backend/routes/payments.js, la pantalla PaymentSummaryScreen con escucha en tiempo real del estado paid, el descuento del 20 % de comisión sobre el saldo en pagos en efectivo y el botón para limpiar activeTrip y volver al inicio.
+Qué se usó / modificó / descartó: Se usó backend/server.js, backend/routes/payments.js, backend/.env.example, paymentService.js y PaymentSummaryScreen.js. Se agregó el botón de regreso al inicio tras finalizar el cobro.
+Archivos y commit: backend/server.js, backend/routes/payments.js, backend/.env.example, src/services/paymentService.js, src/screens/PaymentSummaryScreen.js — "feat: cash payment and balance" / "feat: return home after payment"
+Verificación: Se verificó con git status que backend/.env y backend/serviceAccountKey.json no se subieran al repositorio; se probó el flujo de pago digital y en efectivo actualizando el saldo y regresando a HomeScreen.
+Aprendizaje: Las credenciales privadas de pasarelas de pago deben aislarse en el servidor backend, mientras la app escucha los cambios de estado en Firestore mediante onSnapshot.
+
+#### Entrada #21
+Fecha: 2026-11-12
+Integrante: Sebastian Galeano
+Herramienta: Claude
+Objetivo: Implementar la pantalla de Ganancias con useMemo, el Historial paginado con filtros, el Detalle del viaje con Polyline y la pantalla de Perfil y Configuración (Fase 7 — commits #36 al #40)
+Prompt: "sigamos con la fase 7"
+Resumen de la respuesta: Guió el cálculo memoizado de ganancias diarias, semanales y mensuales en useEarnings.js, la consulta paginada de 20 viajes con filtros de fecha y pago en TripHistoryScreen.js, la visualización de la ruta guardada en TripDetailScreen.js y la edición de perfil, cambio de idioma y cierre de sesión en ProfileSettingsScreen.js.
+Qué se usó / modificó / descartó: Se usó useEarnings.js, dateFilters.js, TripListItem.js, EmptyState.js, EarningsScreen.js, TripHistoryScreen.js, TripDetailScreen.js y ProfileSettingsScreen.js. Se reutilizó la polilínea almacenada en Firestore para evitar nuevas consultas a Google Routes API en el historial.
+Archivos y commit: src/hooks/useEarnings.js, src/utils/dateFilters.js, src/components/TripListItem.js, src/components/EmptyState.js, src/screens/EarningsScreen.js, src/screens/TripHistoryScreen.js, src/screens/TripDetailScreen.js, src/screens/ProfileSettingsScreen.js — "feat: trip detail with route" / "feat: profile and settings screen"
+Verificación: Los totales de hoy, semana y mes coincidieron con los viajes completados; los filtros vacíos mostraron EmptyState; cerrar sesión limpió SessionContext y redirigió al inicio.
+Aprendizaje: Usar useMemo para agrupar métricas financieras de los viajes evita recalcular sumatorias en cada renderizado de la pantalla.
+
+#### Entrada #22
+Fecha: 2026-11-13
+Integrante: Sebastian Galeano
+Herramienta: Gemini
+Objetivo: Implementar notificaciones push en segundo plano con Firebase Cloud Messaging (@react-native-firebase/messaging) y resolver la configuración de paquete en EAS Build (Fase 8 — commit #41)
+Prompt: "necesito terminar la fase 8 del documento"
+Resumen de la respuesta: Indicó instalar @react-native-firebase/app y @react-native-firebase/messaging, crear src/services/notificationService.js para solicitar permisos POST_NOTIFICATIONS y guardar el fcmToken en Firestore, registrar setBackgroundMessageHandler en index.js y conectar los listeners en SessionContext.js. Además diagnosticó que Gradle falló porque google-services.json pertenecía al paquete com.company.UberClone y el plugin de messaging no debía ir en app.json.
+Qué se usó / modificó / descartó: Se usó notificationService.js, el handler de segundo plano en index.js y los useEffect de suscripción en SessionContext.js. Se modificó app.json para igualar package a com.company.UberClone, enlazar googleServicesFile y dejar solo @react-native-firebase/app en plugins.
+Archivos y commit: src/services/notificationService.js, index.js, src/context/SessionContext.js, app.json — "feat: push notifications with FCM"
+Verificación: El build de desarrollo con EAS compiló correctamente tras alinear el package name; al iniciar sesión se registró fcmToken en Firestore y la notificación de prueba desde Firebase Console llegó con la app en segundo plano.
+Aprendizaje: En Expo con React Native Firebase, el package de app.json debe coincidir exactamente con el package_name de google-services.json y setBackgroundMessageHandler debe registrarse en index.js antes de montar la aplicación.
+
