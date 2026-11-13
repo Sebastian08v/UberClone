@@ -3,6 +3,7 @@ import { View, Text, Button, ActivityIndicator, StyleSheet } from 'react-native'
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { openCheckout } from '../services/paymentService';
+import { markCashPaid } from '../services/tripService';
 import formatCurrency from '../utils/formatCurrency';
 
 function getPaymentLabel(trip) {
@@ -21,6 +22,7 @@ export default function PaymentSummaryScreen({ route }) {
   const { tripId } = route.params;
   const [trip, setTrip] = useState(null);
   const [error, setError] = useState(null);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -46,6 +48,17 @@ export default function PaymentSummaryScreen({ route }) {
     }
   };
 
+  const handleCashReceived = async () => {
+  if (busy) return;
+  setBusy(true);
+  try {
+    await markCashPaid(tripId, trip.driverId, trip.commission);
+  } catch (err) {
+    setError(err.message);
+    setBusy(false);
+  }
+};
+
   if (error) {
     return (
       <View style={styles.center}>
@@ -64,6 +77,7 @@ export default function PaymentSummaryScreen({ route }) {
 
   const label = getPaymentLabel(trip);
   const canPay = trip.status === 'completed' && trip.paymentMethod !== 'cash';
+const canCollectCash = trip.status === 'completed' && trip.paymentMethod === 'cash';
 
   return (
     <View style={styles.container}>
@@ -87,6 +101,9 @@ export default function PaymentSummaryScreen({ route }) {
       </View>
 
       {canPay && <Button title="Cobrar con Mercado Pago" onPress={handlePay} />}
+      {canCollectCash && (
+        <Button title="Cobro recibido (efectivo)" onPress={handleCashReceived} disabled={busy} />
+      )}
     </View>
   );
 }

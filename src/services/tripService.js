@@ -1,4 +1,4 @@
-import { collection, addDoc, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch, increment } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
 // TEMPORAL: solo para desarrollo. 
@@ -54,4 +54,18 @@ export async function completeTrip(tripId, data) {
     status: 'completed',
     completedAt: serverTimestamp(),
   });
+}
+
+// AI-assisted: see docs/AI_LOG.md
+export async function markCashPaid(tripId, driverId, commission) {
+  // El batch hace las dos escrituras juntas: o se guardan las dos o ninguna
+  const batch = writeBatch(db);
+  batch.update(doc(db, 'trips', tripId), {
+    status: 'paid',
+    paymentMethod: 'cash',
+  });
+  batch.update(doc(db, 'drivers', driverId), {
+    balance: increment(-commission), // si balance no existe, parte de 0
+  });
+  await batch.commit();
 }

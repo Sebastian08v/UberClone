@@ -2,7 +2,7 @@
 const express = require('express');
 const path = require('path');
 const { initializeApp, cert } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 
 const serviceAccount = require(
   path.resolve(__dirname, '..', process.env.FIREBASE_SERVICE_ACCOUNT_PATH)
@@ -92,17 +92,30 @@ router.get('/return', async (req, res) => {
     }
 
     const tripId = payment.external_reference;
+    const tripRef = db.collection('trips').doc(tripId);
 
-    const update = {
-      paymentStatus: payment.status, // approved, pending, rejected...
-      paymentId: String(payment.id),
-      paymentMethod: 'mercadopago',
-    };
-    if (payment.status === 'approved') {
-      update.status = 'paid';
-    }
+    // Transacción: evita sumar dos veces si se abre la dirección de retorno otra vez
+    await db.runTransaction(async (t) => {
+      const snap = await t.get(tripRef);
+      const trip = snap.data();
 
-    await db.collection('trips').doc(tripId).update(update);
+      const update = {
+        paymentStatus: payment.status,
+        paymentId: String(payment.id),
+        paymentMethod: 'mercadopago',
+      };
+
+      if (payment.status === 'approved') {
+        update.status = 'paid';
+        if (trip.status !== 'paid' && trip.driverId && trip.driverEarnings) {
+          t.update(db.collection('drivers').doc(trip.driverId), {
+            balance: FieldValue.increment(trip.driverEarnings),
+          });
+        }
+      }
+
+  t.update(tripRef, update);
+});
 
     res.send('<h2>Pago recibido</h2><p>Ya puedes volver a la aplicación.</p>');
   } catch (err) {
