@@ -1,6 +1,7 @@
 // AI-assisted: see docs/AI_LOG.md
 import React, { useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { FlatList, ActivityIndicator, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { SessionContext } from '../context/SessionContext';
 import { getDriverTripsPage } from '../services/tripService';
 import TripListItem from '../components/TripListItem';
@@ -19,6 +20,7 @@ function Chip({ label, active, onPress }) {
 }
 
 export default function TripHistoryScreen() {
+  const navigation = useNavigation();
   const { driver, t, language } = useContext(SessionContext);
   const [trips, setTrips] = useState([]);
   const [lastDoc, setLastDoc] = useState(null);
@@ -109,7 +111,12 @@ export default function TripHistoryScreen() {
       data={trips}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
-        <TripListItem trip={item} t={t} language={language} />
+        <TripListItem
+          trip={item}
+          t={t}
+          language={language}
+          onPress={() => navigation.navigate('TripDetail', { tripId: item.id })}
+        />
       )}
       contentContainerStyle={styles.container}
       ListHeaderComponent={header}

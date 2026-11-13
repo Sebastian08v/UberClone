@@ -149,4 +149,16 @@ export default {
     methodAll: 'All payments',
     empty: 'No trips for the selected filter',
   },
+  tripDetail: {
+    title: 'Trip detail',
+    origin: 'Origin',
+    destination: 'Destination',
+    duration: 'Duration',
+    distance: 'Distance',
+    commission: 'Commission',
+    tip: 'Tip',
+    rating: 'Rating',
+    noRoute: 'This trip has no saved route',
+    notFound: 'Trip not found',
+  },
 };

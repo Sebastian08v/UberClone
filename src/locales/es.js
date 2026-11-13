@@ -149,5 +149,17 @@ export default {
     methodAll: 'Todos los pagos',
     empty: 'No hay viajes para el filtro seleccionado',
   },
+  tripDetail: {
+    title: 'Detalle del viaje',
+    origin: 'Origen',
+    destination: 'Destino',
+    duration: 'Duración',
+    distance: 'Distancia',
+    commission: 'Comisión',
+    tip: 'Propina',
+    rating: 'Calificación',
+    noRoute: 'Este viaje no tiene ruta guardada',
+    notFound: 'No se encontró el viaje',
+  },
   
 };

@@ -1,6 +1,6 @@
 import {
   collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch, increment,
-  query, where, orderBy, limit, startAfter, getDocs,
+  query, where, orderBy, limit, startAfter, getDocs, getDoc,
 } from 'firebase/firestore';
 import { getDateRange } from '../utils/dateFilters';
 import { db } from '../config/firebase';
@@ -106,3 +106,8 @@ export const getDriverTripsPage = async (driverId, lastDoc = null, filters = {})
     hasMore: snap.docs.length === TRIPS_PAGE_SIZE,
   };
 };
+// AI-assisted: see docs/AI_LOG.md
+export async function getTripById(tripId) {
+  const snap = await getDoc(doc(db, 'trips', tripId));
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}

@@ -87,6 +87,7 @@ export default function TripInProgressScreen() {
   }, [location, busy, activeTrip, setActiveTrip]);
 
   // 5. Finalizar viaje: calcula tarifa, guarda commissionRate y pasa a completed
+   // 5. Finalizar viaje: calcula tarifa, guarda commissionRate y la ruta, y pasa a completed
   const handleFinishTrip = useCallback(async () => {
     console.log('Finalizar presionado');
     if (busy) return;
@@ -106,16 +107,18 @@ export default function TripInProgressScreen() {
         tip,
         driverEarnings,
         commissionRate: COMMISSION_RATE,
+        // AI-assisted: see docs/AI_LOG.md
+        ...(route?.encodedPolyline ? { routePolyline: route.encodedPolyline } : {}),
       };
       await completeTrip(activeTrip.id, data);
-        setActiveTrip({ ...activeTrip, ...data, status: 'completed' });
-        navigation.navigate('PaymentSummary', { tripId: activeTrip.id });
+      setActiveTrip({ ...activeTrip, ...data, status: 'completed' });
+      navigation.navigate('PaymentSummary', { tripId: activeTrip.id });
     } catch (e) {
-        console.log('Error al finalizar:', e.message);
-        setRouteError(e.message);
-        setBusy(false);
-      }
-  }, [busy, activeTrip, setActiveTrip, navigation]);
+      console.log('Error al finalizar:', e.message);
+      setRouteError(e.message);
+      setBusy(false);
+    }
+  }, [busy, activeTrip, setActiveTrip, navigation, route]);
 
   if (!activeTrip) {
     return (
