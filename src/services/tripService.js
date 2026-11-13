@@ -2,6 +2,7 @@ import {
   collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch, increment,
   query, where, orderBy, limit, startAfter, getDocs,
 } from 'firebase/firestore';
+import { getDateRange } from '../utils/dateFilters';
 import { db } from '../config/firebase';
 
 // TEMPORAL: solo para desarrollo. 
@@ -74,12 +75,27 @@ export async function markCashPaid(tripId, driverId, commission) {
   await batch.commit();
 }
 
-export const getDriverTripsPage = async (driverId, lastDoc = null) => {
+// AI-assisted: see docs/AI_LOG.md
+export const getDriverTripsPage = async (driverId, lastDoc = null, filters = {}) => {
+  const { dateType = 'all', from = null, to = null, method = 'all' } = filters;
+
   const constraints = [
     where('driverId', '==', driverId),
     where('status', 'in', ['completed', 'paid']),
-    orderBy('createdAt', 'desc'),
   ];
+
+  if (method !== 'all') {
+    constraints.push(where('paymentMethod', '==', method));
+  }
+
+  // "range" solo filtra cuando ya hay fecha inicial y final
+  const useDate = dateType !== 'all' && (dateType !== 'range' || (from && to));
+  if (useDate) {
+    const { start, end } = getDateRange(dateType, from, to);
+    constraints.push(where('createdAt', '>=', start), where('createdAt', '<', end));
+  }
+
+  constraints.push(orderBy('createdAt', 'desc'));
   if (lastDoc) constraints.push(startAfter(lastDoc));
   constraints.push(limit(TRIPS_PAGE_SIZE));
 

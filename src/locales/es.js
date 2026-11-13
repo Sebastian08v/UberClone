@@ -139,5 +139,15 @@ export default {
     paymentPending: 'Pendiente',
     paymentRejected: 'Rechazado',
     paymentCash: 'Efectivo',
+    all: 'Todos',
+    today: 'Hoy',
+    week: 'Semana',
+    month: 'Mes',
+    range: 'Rango',
+    from: 'Desde',
+    to: 'Hasta',
+    methodAll: 'Todos los pagos',
+    empty: 'No hay viajes para el filtro seleccionado',
   },
+  
 };
