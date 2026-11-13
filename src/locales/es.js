@@ -132,4 +132,12 @@ export default {
     net: 'Ganancia neta',
     average: 'Promedio por viaje',
   },
+  history: {
+    fare: 'Tarifa',
+    net: 'Ganancia',
+    paymentApproved: 'Aprobado',
+    paymentPending: 'Pendiente',
+    paymentRejected: 'Rechazado',
+    paymentCash: 'Efectivo',
+  },
 };

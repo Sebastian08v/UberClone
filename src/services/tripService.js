@@ -1,4 +1,7 @@
-import { collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch, increment } from 'firebase/firestore';
+import {
+  collection, addDoc, serverTimestamp, doc, updateDoc, writeBatch, increment,
+  query, where, orderBy, limit, startAfter, getDocs,
+} from 'firebase/firestore';
 import { db } from '../config/firebase';
 
 // TEMPORAL: solo para desarrollo. 
@@ -10,6 +13,7 @@ const TEST_PLACES = [
 ];
 const TEST_CATEGORIES = ['economy', 'xl', 'premium'];
 const TEST_PAYMENTS = ['mercadopago', 'stripe', 'cash'];
+export const TRIPS_PAGE_SIZE = 20;
 
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
@@ -69,3 +73,20 @@ export async function markCashPaid(tripId, driverId, commission) {
   });
   await batch.commit();
 }
+
+export const getDriverTripsPage = async (driverId, lastDoc = null) => {
+  const constraints = [
+    where('driverId', '==', driverId),
+    where('status', 'in', ['completed', 'paid']),
+    orderBy('createdAt', 'desc'),
+  ];
+  if (lastDoc) constraints.push(startAfter(lastDoc));
+  constraints.push(limit(TRIPS_PAGE_SIZE));
+
+  const snap = await getDocs(query(collection(db, 'trips'), ...constraints));
+  return {
+    trips: snap.docs.map((d) => ({ id: d.id, ...d.data() })),
+    lastDoc: snap.docs[snap.docs.length - 1] ?? null,
+    hasMore: snap.docs.length === TRIPS_PAGE_SIZE,
+  };
+};

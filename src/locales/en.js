@@ -132,4 +132,12 @@ export default {
     net: 'Net earnings',
     average: 'Average per trip',
   },
+  history: {
+    fare: 'Fare',
+    net: 'Earnings',
+    paymentApproved: 'Approved',
+    paymentPending: 'Pending',
+    paymentRejected: 'Rejected',
+    paymentCash: 'Cash',
+  },
 };
