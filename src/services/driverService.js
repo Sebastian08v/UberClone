@@ -1,4 +1,4 @@
-import {collection,addDoc,getDocs,query,where,limit,serverTimestamp,doc,updateDoc} from 'firebase/firestore';
+import {collection,addDoc,getDocs,query,where,limit,serverTimestamp,doc,updateDoc, getDoc} from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { uploadImage, IMAGE_FOLDERS } from './imageService';
 import { isRtmRequired } from '../utils/validators';
@@ -93,3 +93,8 @@ export const updateDriverLocation = (driverId, latitude, longitude) =>
     location: { latitude, longitude },
     locationUpdatedAt: serverTimestamp(),
   });
+export async function getDriverStatus(driverId) {
+  const snap = await getDoc(doc(db, 'drivers', driverId));
+  if (!snap.exists()) return null;
+  return { approvalStatus: snap.data().approvalStatus };
+}

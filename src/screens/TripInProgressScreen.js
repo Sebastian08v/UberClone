@@ -88,6 +88,7 @@ export default function TripInProgressScreen() {
 
   // 5. Finalizar viaje: calcula tarifa, guarda commissionRate y pasa a completed
   const handleFinishTrip = useCallback(async () => {
+    console.log('Finalizar presionado');
     if (busy) return;
     setBusy(true);
     setRouteError(null);
@@ -107,12 +108,13 @@ export default function TripInProgressScreen() {
         commissionRate: COMMISSION_RATE,
       };
       await completeTrip(activeTrip.id, data);
-      setActiveTrip({ ...activeTrip, ...data, status: 'completed' });
-      navigation.goBack(); // En el commit 34 aquí se abre el resumen del cobro
+        setActiveTrip({ ...activeTrip, ...data, status: 'completed' });
+        navigation.navigate('PaymentSummary', { tripId: activeTrip.id });
     } catch (e) {
-      setRouteError(e.message);
-      setBusy(false);
-    }
+        console.log('Error al finalizar:', e.message);
+        setRouteError(e.message);
+        setBusy(false);
+      }
   }, [busy, activeTrip, setActiveTrip, navigation]);
 
   if (!activeTrip) {

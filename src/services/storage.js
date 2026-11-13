@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const KEYS = {
   LANGUAGE: 'language',
   AVAILABILITY: 'lastAvailability',
+  SESSION: 'session',
 };
 
 export async function saveLanguage(language) {
@@ -39,5 +40,31 @@ export async function getAvailability() {
   } catch (error) {
     console.warn('Error reading availability:', error);
     return false;
+  }
+}
+
+export async function saveSession(session) {
+  try {
+    await AsyncStorage.setItem(KEYS.SESSION, JSON.stringify(session));
+  } catch (error) {
+    console.warn('Error saving session:', error);
+  }
+}
+
+export async function getSession() {
+  try {
+    const value = await AsyncStorage.getItem(KEYS.SESSION);
+    return value ? JSON.parse(value) : null;
+  } catch (error) {
+    console.warn('Error reading session:', error);
+    return null;
+  }
+}
+
+export async function clearSession() {
+  try {
+    await AsyncStorage.removeItem(KEYS.SESSION);
+  } catch (error) {
+    console.warn('Error clearing session:', error);
   }
 }

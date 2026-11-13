@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react';
 import { PermissionsAndroid, Platform } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 
+const toCoords = (position) => ({
+  latitude: position.coords.latitude,
+  longitude: position.coords.longitude,
+});
+
 export default function useDriverLocation(enabled = true) {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState('');
@@ -9,6 +14,12 @@ export default function useDriverLocation(enabled = true) {
   useEffect(() => {
     let watchId = null;
     let cancelled = false;
+
+    const onInitialSuccess = (position) => {
+      if (cancelled) return;
+      setError('');
+      setLocation(toCoords(position));
+    };
 
     const startWatching = async () => {
       if (Platform.OS === 'android') {
@@ -23,16 +34,20 @@ export default function useDriverLocation(enabled = true) {
 
       if (cancelled) return;
 
-      // Posición inicial: siempre, para que el mapa pinte aunque no esté Disponible
+      // Posición inicial: primero GPS (alta precisión)...
       Geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
+        onInitialSuccess,
+        () => {
+          // ...y si vence, segundo intento con baja precisión (Wi-Fi / antenas)
+          Geolocation.getCurrentPosition(
+            onInitialSuccess,
+            (err) => {
+              if (!cancelled) setError(err.message);
+            },
+            { enableHighAccuracy: false, timeout: 20000, maximumAge: 60000 }
+          );
         },
-        (err) => setError(err.message),
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 10000 }
       );
 
       // Seguimiento continuo: solo si está Disponible
@@ -41,10 +56,7 @@ export default function useDriverLocation(enabled = true) {
       watchId = Geolocation.watchPosition(
         (position) => {
           setError('');
-          setLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
+          setLocation(toCoords(position));
         },
         (err) => setError(err.message),
         {

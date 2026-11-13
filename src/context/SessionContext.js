@@ -1,5 +1,12 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { getLanguage, saveLanguage } from '../services/storage';
+import {
+  getLanguage,
+  saveLanguage,
+  getSession,
+  saveSession,
+  clearSession,
+} from '../services/storage';
+import { getDriverStatus } from '../services/driverService';
 import es from '../locales/es';
 import en from '../locales/en';
 
@@ -12,11 +19,55 @@ export function SessionProvider({ children }) {
   // null = sin registro | 'pending' | 'approved'
   const [approvalStatus, setApprovalStatus] = useState(null);
   const [language, setLanguage] = useState('es');
+  // true mientras se restaura la sesión guardada
+  const [loading, setLoading] = useState(true);
 
-  // Al arrancar, carga el idioma guardado
+  // AI-assisted: see docs/AI_LOG.md #N
+  // Al arrancar: carga idioma y restaura la última sesión
   useEffect(() => {
-    getLanguage().then(setLanguage);
+    const restore = async () => {
+      const [savedLanguage, saved] = await Promise.all([
+        getLanguage(),
+        getSession(),
+      ]);
+      setLanguage(savedLanguage);
+
+      if (saved?.driverId) {
+        try {
+          // Estado actual desde la base de datos
+          const remote = await getDriverStatus(saved.driverId);
+          if (remote) {
+            setDriver({ id: saved.driverId });
+            setApprovalStatus(remote.approvalStatus ?? 'pending');
+          } else {
+            await clearSession(); // el conductor ya no existe en la base
+          }
+        } catch (error) {
+          // Sin red: usa lo último que se guardó
+          setDriver({ id: saved.driverId });
+          setApprovalStatus(saved.approvalStatus ?? 'pending');
+        }
+      }
+      setLoading(false);
+    };
+    restore();
   }, []);
+
+  // Guarda la sesión cada vez que cambia (después de restaurar)
+  useEffect(() => {
+    if (loading) return;
+    if (driver?.id && approvalStatus) {
+      saveSession({ driverId: driver.id, approvalStatus });
+    } else {
+      clearSession();
+    }
+  }, [driver, approvalStatus, loading]);
+
+  // Para el botón "Cerrar sesión" (commit 40)
+  const signOut = () => {
+    setDriver(null);
+    setApprovalStatus(null);
+  };
 
   // Cambia el idioma en pantalla y lo guarda en AsyncStorage
   const changeLanguage = async (newLanguage) => {
@@ -35,6 +86,8 @@ export function SessionProvider({ children }) {
         setApprovalStatus,
         language,
         changeLanguage,
+        loading,
+        signOut,
         t,
       }}
     >

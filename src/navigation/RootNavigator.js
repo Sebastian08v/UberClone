@@ -28,7 +28,7 @@ export default function RootNavigator(){
             />
 
             <Stack.Screen
-                name = "Payment"
+                name = "PaymentSummary"
                 component = {PaymentSummaryScreen}
             />
             
